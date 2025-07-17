@@ -1,0 +1,54 @@
+#+title: {{__concern__}}
+#+filetags: :project:dashboard:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: dashboard
+:STATUS: %^{Status|active|archived}
+:OWNER: %^{Owner|Your Name}
+:START_DATE: %<%Y-%m-%d>
+:END_DATE: %^{End Date}
+:END:
+
+* Overview
+%?  ;; Brief project description
+
+* Key Metrics
+- Progress: 
+- Risks: 
+- Milestones: 
+
+* Risk Register
+| Risk | Probability | Impact | Mitigation | Owner | Status |
+
+* Dependencies
+| Dependency | Type | Status | Contact | Notes |
+
+* Technical Debt
+| Item | Impact | Effort | Priority | Notes |
+
+
+* Links to Artifacts
+- [[file:architecture.org][Architecture Overview]]
+- [[file:adrs.org][ADRs Overview]]
+- [[file:rcas.org][RCAs Overview]]
+- [[file:tasks.org][Tasks Overview]]
+- [[file:meetings.org][Meetings Overview]]
+- [[file:emails.org][Emails Overview]]
+- [[file:notes.org][Notes Overview]]
+- Resources Directory: [[file:resources/][Resources]]
+- Code Directory: [[file:code/][Codebases]]
+
+* Agenda View
+#+begin_src org-agenda
+#+agenda-files: tasks.org meetings.org rcas.org  ;; Customize
+#+end_src
+
+* Notes
+- 
+
+
+* Log
+- %<%Y-%m-%d %H:%M:%S> - {{__concern__}} started

@@ -1,0 +1,18 @@
+#+title: All Notes - {{__concern__}}
+#+filetags: :notes:index:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: index
+:END:
+
+* All Notes - {{__concern__}}
+#+include: "notes/notes-001.org" :only-contents t
+;; Add more
+
+* Agenda
+#+begin_src org-agenda
+#+agenda-files: notes/
+#+end_src

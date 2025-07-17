@@ -1,0 +1,18 @@
+#+title: All Meetings - {{__concern__}}
+#+filetags: :meetings:index:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: index
+:END:
+
+* All Meetings - {{__concern__}}
+#+include: "meetings/meeting-001.org" :only-contents t
+;; Add more
+
+* Agenda
+#+begin_src org-agenda
+#+agenda-files: meetings/
+#+end_src

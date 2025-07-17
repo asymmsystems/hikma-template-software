@@ -1,0 +1,19 @@
+#+title: Resource: %^{Title}
+#+filetags: :resource:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: resource
+:URL: %^{URL}
+:END:
+
+* Description
+%?
+
+* Content/Excerpt
+
+* Related Artifacts
+- [[id:task-id][Task Title]]
+

@@ -1,0 +1,18 @@
+#+title: All Emails - {{__concern__}}
+#+filetags: :tasks:index:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: index
+:END:
+
+* All Emails - {{__concern__}}
+#+include: "emails/email-001.org" :only-contents t
+;; Add more
+
+* Agenda
+#+begin_src org-agenda
+#+agenda-files: emails/
+#+end_src

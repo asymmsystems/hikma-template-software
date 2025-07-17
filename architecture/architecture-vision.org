@@ -1,0 +1,30 @@
+#+title: Architecture Vision: %^{Title}
+#+filetags: :architecture:vision:
+#+created: %<%Y-%m-%d %H:%M:%S>
+#+updated: %<%Y-%m-%d %H:%M:%S>
+
+:PROPERTIES:
+:ID: %(org-id-new)
+:TYPE: architecture-vision
+:VERSION: %^{Version|1.0}
+:STAKEHOLDERS: %^{Stakeholders}
+:STATUS: %^{Status|draft|approved}
+:END:
+
+* Problem Statement
+%?
+
+* Vision Statement
+
+* Scope
+- In Scope: 
+- Out of Scope: 
+
+* Assumptions and Dependencies
+- 
+
+* Risks
+- 
+
+* Related Artifacts
+- [[id:adr-id][ADR Title]]
