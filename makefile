@@ -1,10 +1,17 @@
 # Makefile for project automation
-PROJECT_NAME ?= {{project-name}}
+PROJECT_NAME ?= {{concern}}
 EMACS ?= emacs
 ORG_FILES := $(wildcard *.org */*.org)
 JBAKE_JAR := jbake.jar  # Downloaded on-demand
 DOCKER_IMAGE := emacs-mu4e  # Custom image for mu4e
 SUBDIRS := architecture adr bugs emails meetings notes rcas tasks  # For auto-includes
+
+# Auto-detect GitHub repository from git remote
+GIT_REMOTE_URL := $(shell git config --get remote.origin.url 2>/dev/null)
+GITHUB_REPO := $(shell echo "$(GIT_REMOTE_URL)" | sed -E 's#.*github\.com[:/]([^/]+/[^.]+)(\.git)?$$#\1#')
+
+# GitHub Pages deployment directory (can be overridden with: make deploy-site GH_PAGES_DIR=/custom/path)
+GH_PAGES_DIR ?= site/output
 
 # Init: Create directories, basic files, and JBake setup
 init:
@@ -44,10 +51,46 @@ export-org-to-md:
 serve-site:
 	cd site/output && python3 -m http.server 8000  # Simple local server
 
-# 3. Sync bugs with GitHub issues (using org-sync package; configure repo in Emacs)
+# 3. Sync bugs with GitHub issues (creates individual bug files in bugs/* directory)
 sync-bugs:
-	$(EMACS) --batch --eval "(require 'org-sync)" --eval "(org-sync-fetch 'github \"owner/repo\" \"bugs.org\")"  # One-way pull; customize for two-way
-	@echo "Bugs synced to bugs.org and individual files."
+	@if [ -z "$(GITHUB_REPO)" ]; then \
+		echo "Error: No GitHub remote detected."; \
+		echo "  Either: git remote add origin https://github.com/owner/repo.git"; \
+		echo "  Or run: make sync-bugs GITHUB_REPO=owner/repo"; \
+		exit 1; \
+	fi
+	@command -v gh >/dev/null 2>&1 || { echo "Error: GitHub CLI (gh) required. Run 'make install-deps'"; exit 1; }
+	@command -v jq >/dev/null 2>&1 || { echo "Error: jq required. Run 'make install-deps'"; exit 1; }
+	@echo "Syncing issues from: $(GITHUB_REPO)"
+	@mkdir -p bugs/
+	@gh issue list --repo $(GITHUB_REPO) --state all --json number,title,body,state,labels,createdAt --limit 100 | \
+	jq -c '.[]' | while read -r issue; do \
+		num=$$(echo "$$issue" | jq -r '.number'); \
+		title=$$(echo "$$issue" | jq -r '.title' | sed 's/"/\\"/g'); \
+		body=$$(echo "$$issue" | jq -r '.body // ""' | sed 's/"/\\"/g'); \
+		state=$$(echo "$$issue" | jq -r '.state'); \
+		created=$$(echo "$$issue" | jq -r '.createdAt'); \
+		labels=$$(echo "$$issue" | jq -r '.labels[].name' | tr '\n' ':' | sed 's/ /_/g;s/^/:/;s/:$$//'); \
+		file="bugs/bug-$$num.org"; \
+		{ \
+			echo "#+title: Bug #$$num: $$title"; \
+			echo "#+filetags: :bug$$labels:"; \
+			echo "#+created: $$created"; \
+			echo "#+state: $$state"; \
+			echo ""; \
+			echo "* Bug #$$num: $$title"; \
+			echo ":PROPERTIES:"; \
+			echo ":GITHUB_ISSUE: $$num"; \
+			echo ":STATE: $$state"; \
+			echo ":END:"; \
+			echo ""; \
+			echo "** Description"; \
+			echo "$$body"; \
+		} > "$$file"; \
+		echo "  Created: $$file"; \
+	done
+	@echo "✓ Issues synced to bugs/* directory"
+	@echo "Note: Run 'make update-includes' to update bugs.org references"
 
 # 4. Manage Git submodules in code/
 submodules-init:
@@ -99,7 +142,30 @@ backup-git:
 	@echo "Project backed up to Git."
 
 deploy-site:
-	cp -r site/output/* ../gh-pages/ && cd ../gh-pages && git add . && git commit -m "Site update" && git push  # To GitHub Pages; customize
+	@if [ ! -d "site/output" ] || [ -z "$$(ls -A site/output 2>/dev/null)" ]; then \
+		echo "Error: site/output is empty. Run 'make build-site' first."; \
+		exit 1; \
+	fi
+	@if [ -z "$(GITHUB_REPO)" ]; then \
+		echo "Error: No GitHub remote detected. Run: git remote add origin <url>"; \
+		exit 1; \
+	fi
+	@echo "Deploying to gh-pages branch..."
+	@rm -rf .tmp-gh-pages
+	@git clone --depth 1 --branch gh-pages $(GIT_REMOTE_URL) .tmp-gh-pages || \
+		(echo "gh-pages branch doesn't exist. Creating..." && \
+		 git clone --depth 1 $(GIT_REMOTE_URL) .tmp-gh-pages && \
+		 cd .tmp-gh-pages && \
+		 git checkout --orphan gh-pages && \
+		 git rm -rf . 2>/dev/null || true)
+	@cp -r site/output/* .tmp-gh-pages/
+	@cd .tmp-gh-pages && \
+		git add . && \
+		git commit -m "Deploy site: $$(date '+%Y-%m-%d %H:%M:%S')" && \
+		git push origin gh-pages
+	@rm -rf .tmp-gh-pages
+	@echo "✓ Site deployed to gh-pages branch"
+	@echo "  Enable in repo Settings → Pages → Source: gh-pages branch"
 
 ai-suggest:
 	curl -s -X POST http://localhost:11434/api/generate -d '{"model": "llama3", "prompt": "Suggest content for $(TYPE) in project $(PROJECT_NAME)"}' > new-$(TYPE).org  # Local Ollama AI
@@ -139,12 +205,12 @@ watch:
 # - curl (for AI/api calls): Usually pre-installed
 # Run 'make check-deps' to verify; 'make install-deps' to attempt auto-install (OS-specific)
 
-PROJECT_NAME ?= {{project-name}}
+PROJECT_NAME ?= {{concern}}
 EMACS ?= emacs
 ORG_FILES := $(wildcard *.org */*.org)
 
 # Dependency lists (expand as needed)
-COMMON_DEPS := emacs curl
+COMMON_DEPS := emacs curl jq gh
 LINUX_DEPS := inotify-tools
 MAC_DEPS := fswatch
 
